@@ -4,11 +4,15 @@ import User from "../models/user";
 import { generateAccessToken, generateRefreshToken, decodeToken } from "../utils/token";
 import { validationResult } from 'express-validator';
 import { mappingErrors } from "../utils/helper";
+import HttpCodes from "../utils/httpCodes";
+import { dispatchJob } from "../config/queue";
+import listQueue from "../utils/listQueue";
+import { MailJob } from "../jobs/MailJob";
 
 export const register = async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.error(mappingErrors(errors.array()),400);
+        return res.error(mappingErrors(errors.array()),HttpCodes.BAD_REQUEST);
     }
 
     try {
@@ -16,18 +20,33 @@ export const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({ username, password: hashedPassword, name, keterangan });
 
-        res.success(user);
+        // Send confirmation email
+        await dispatchJob(listQueue.MAIL, new MailJob({
+            from: "Your App",
+            to: 'ikhsan@mail.com',
+            subject: 'Registration Successful',
+            text: `Hello ${user.name},\n\nYour registration was successful!`,
+            html: `<p>Hello ${user.name},</p><p>Your registration was successful!</p>`,
+        }));
+
+        return res.success(user);
     } catch (error) {
-        res.error("Error", 500)
+        throw error;
+        return res.error("Internal Server Error", HttpCodes.INTERNAL_SERVER_ERROR)
     }
 };
 
 export const login = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.error(mappingErrors(errors.array()), HttpCodes.BAD_REQUEST);
+    }
+
     const { username, password } = req.body;
     const user = await User.findOne({ where: { username } });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.error("Invalid credentials", 401);
+        return res.error("Invalid credentials", HttpCodes.UNAUTHORIZED);
     }
 
     const accessToken = generateAccessToken(user.id);
@@ -40,21 +59,21 @@ export const login = async (req: Request, res: Response) => {
         accessToken: accessToken,
         refreshToken: refreshToken
     };
-    res.success(resp);
+    return res.success(resp);
 };
 
 export const refresh = (req: Request, res: Response) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-        return res.error("Unauthorized", 401);
+        return res.error("Unauthorized", HttpCodes.UNAUTHORIZED);
     }
 
     try {
         const decoded = decodeToken(refreshToken);
         const accessToken = generateAccessToken((decoded as any).id);
-        res.success({ accessToken, refreshToken });
+        return res.success({ accessToken, refreshToken });
     } catch (error) {
-        return res.error("Invalid refresh token", 401);
+        return res.error("Invalid refresh token", HttpCodes.UNAUTHORIZED);
     }
 };

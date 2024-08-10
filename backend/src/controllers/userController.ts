@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import User from '../models/user';
 import bcrypt from "bcryptjs";
 import { getPagination, getPagingData } from '../utils/pagination';
-
+import HttpCodes from '../utils/httpCodes';
 // Create a new user
 export const createUser = async (req: Request, res: Response) => {
     try {
@@ -18,9 +18,9 @@ export const createUser = async (req: Request, res: Response) => {
             keterangan,
         });
 
-        res.status(201).json(user);
+        return res.status(HttpCodes.CREATED).json(user);
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.error('Internal Server Error',HttpCodes.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -32,7 +32,7 @@ export const getUsers = async (req: Request, res: Response) => {
         const data = await User.findAndCountAll({ limit, offset });
         const { totalData, results, totalPages, currentPage, perPage } = getPagingData(data, page as string, limit);
 
-        res.success(results, {
+        return res.success(results, {
             totalData,
             totalPages,
             currentPage,
@@ -40,7 +40,7 @@ export const getUsers = async (req: Request, res: Response) => {
         });
 
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.error('Internal Server Error',HttpCodes.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -51,12 +51,12 @@ export const getUserById = async (req: Request, res: Response) => {
         const user = await User.findByPk(id);
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.error('User not found',HttpCodes.NOT_FOUND);
         }
 
-        res.json(user);
+        return res.json(user);
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.error('Internal Server Error', HttpCodes.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -69,7 +69,7 @@ export const updateUser = async (req: Request, res: Response) => {
         const user = await User.findByPk(id);
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.error('User not found', HttpCodes.NOT_FOUND);
         }
 
         if (username) user.username = username;
@@ -79,9 +79,9 @@ export const updateUser = async (req: Request, res: Response) => {
 
         await user.save();
 
-        res.json(user);
+        return res.json(user);
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.error('Internal Server Error', HttpCodes.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -93,13 +93,13 @@ export const deleteUser = async (req: Request, res: Response) => {
         const user = await User.findByPk(id);
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.error('User not found', HttpCodes.NOT_FOUND);
         }
 
         await user.destroy();
 
-        res.json({ message: 'User deleted successfully' });
+        return res.success({});
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.error('Internal Server Error', HttpCodes.INTERNAL_SERVER_ERROR);
     }
 };
