@@ -1,0 +1,7 @@
+/* Import Flowbite components - This must be at the top */
+@import 'flowbite';
+
+/* Tailwind CSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
