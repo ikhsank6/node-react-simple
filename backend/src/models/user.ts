@@ -9,6 +9,7 @@ class User
     public id!: number;
     public name!: string | null;
     public keterangan!: string | null;
+    public email!: string | null;
     public username!: string;
     public password!: string;
 
@@ -24,6 +25,10 @@ class User
                     primaryKey: true,
                 },
                 name: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                },
+                email: {
                     type: DataTypes.STRING,
                     allowNull: true,
                 },

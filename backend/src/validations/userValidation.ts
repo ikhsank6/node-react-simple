@@ -17,7 +17,9 @@ export const registerValidation = [
         .matches(/\d/)
         .withMessage('Password must contain at least one number')
         .matches(/[@$!%*?&]/)
-        .withMessage('Password must contain at least one special character (@$!%*?&)')
+        .withMessage('Password must contain at least one special character (@$!%*?&)'),
+    body('email')
+        .notEmpty().withMessage('Email is required')
 ];
 
 export const loginValidation = [

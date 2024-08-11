@@ -12,18 +12,18 @@ import { MailJob } from "../jobs/MailJob";
 export const register = async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.error(mappingErrors(errors.array()),HttpCodes.BAD_REQUEST);
+        return res.error(mappingErrors(errors.array()), HttpCodes.BAD_REQUEST);
     }
 
     try {
-        const { username, password, name, keterangan } = req.body;
+        const { username, password, name, keterangan, email } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ username, password: hashedPassword, name, keterangan });
+        const user = await User.create({ username, password: hashedPassword, name, keterangan, email });
 
         // Send confirmation email
         await dispatchJob(listQueue.MAIL, new MailJob({
             from: "Your App",
-            to: 'ikhsan@mail.com',
+            to: user.email,
             subject: 'Registration Successful',
             text: `Hello ${user.name},\n\nYour registration was successful!`,
             html: `<p>Hello ${user.name},</p><p>Your registration was successful!</p>`,
@@ -53,9 +53,7 @@ export const login = async (req: Request, res: Response) => {
     const refreshToken = generateRefreshToken(user.id);
 
     let resp = {
-        id: user.id,
-        name: user.name,
-        keterangan: user.keterangan,
+        user: user,
         accessToken: accessToken,
         refreshToken: refreshToken
     };
