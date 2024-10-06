@@ -16,7 +16,6 @@ interface Filters {
 }
 
 const User: React.FC = () => {
-    const [searchTerm, setSearchTerm] = useState<string>('');
     const [filters, setFilters] = useState<Filters>({
         kueri: ""
     });
@@ -24,9 +23,12 @@ const User: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null); // Error state
 
     const fetchData = async (page: number, search: any, limit: number) => {
         try {
+            setLoading(true);
             const response = await UserService.getList({
                 page: page,
                 limit: limit
@@ -35,7 +37,10 @@ const User: React.FC = () => {
             setTotalPages(response.meta.pages.totalPages); // Assuming API returns total pages
             setCurrentPage(response.meta.pages.currentPage);
         } catch (error) {
+            setError('Error fetching data. Please try again later.');
             console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -113,14 +118,40 @@ const User: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((user) => (
-                            <tr key={user.id}>
-                                <td className="px-4 py-2 border">{user.id}</td>
-                                <td className="px-4 py-2 border">{user.name}</td>
-                                <td className="px-4 py-2 border">{user.email}</td>
-                                <td className="px-4 py-2 border">{user.username}</td>
+                        {loading ? (
+                            // Show loading row
+                            <tr>
+                                <td colSpan={4} className="text-center py-4">
+                                    <div className="flex justify-center items-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600"></div>
+                                    </div>
+                                </td>
                             </tr>
-                        ))}
+                        ) : error ? (
+                            // Show error message in table
+                            <tr>
+                                <td colSpan={4} className="text-center py-4 text-red-500">
+                                    {error}
+                                </td>
+                            </tr>
+                        ) : data.length === 0 ? (
+                        // Show no data found message
+                        <tr>
+                            <td colSpan={4} className="text-center py-4 text-gray-500">
+                                No data found.
+                            </td>
+                        </tr>
+                        ) : (
+                            // Show user data rows
+                            data.map((user) => (
+                                <tr key={user.id}>
+                                    <td className="px-4 py-2 border">{user.id}</td>
+                                    <td className="px-4 py-2 border">{user.name}</td>
+                                    <td className="px-4 py-2 border">{user.email}</td>
+                                    <td className="px-4 py-2 border">{user.username}</td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
 
