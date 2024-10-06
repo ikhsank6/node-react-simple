@@ -3,10 +3,11 @@ import User from '../models/user';
 import bcrypt from "bcryptjs";
 import { getPagination, getPagingData } from '../utils/pagination';
 import HttpCodes from '../utils/httpCodes';
+const { Op } = require('sequelize');
 // Create a new user
 export const createUser = async (req: Request, res: Response) => {
     try {
-        const { username, password, name, keterangan } = req.body;
+        const { username, password, name, keterangan,email } = req.body;
 
         // Hash the password before saving it to the database
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -16,6 +17,7 @@ export const createUser = async (req: Request, res: Response) => {
             password: hashedPassword,
             name,
             keterangan,
+            email,
         });
 
         return res.status(HttpCodes.CREATED).json(user);
@@ -27,10 +29,16 @@ export const createUser = async (req: Request, res: Response) => {
 // Get all users
 export const getUsers = async (req: Request, res: Response) => {
     try {
-        const { page, size } = req.query;
-        const { limit, offset } = getPagination(page as string, size as string);
-        const data = await User.findAndCountAll({ limit, offset });
-        const { totalData, results, totalPages, currentPage, perPage } = getPagingData(data, page as string, limit);
+        const { page, limit, kueri } = req.query;
+        const { size, offset } = getPagination(page as string, limit as string);
+        
+        // Build the filter condition
+        const whereCondition = {
+            ...(kueri && { username: { [Op.like]: `%${kueri}%` } }), // Filter by name using LIKE
+        };
+
+        const data = await User.findAndCountAll({ limit: size, offset: offset, where: whereCondition });
+        const { totalData, results, totalPages, currentPage, perPage } = getPagingData(data, page as string, size);
 
         return res.success(results, {
             totalData,

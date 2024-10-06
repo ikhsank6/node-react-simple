@@ -1,6 +1,6 @@
 
 interface PaginationParams {
-    limit: number;
+    size: number;
     offset: number;
 }
 
@@ -12,11 +12,11 @@ interface PaginatedResult<T> {
     perPage: number,
 }
 
-const getPagination = (page?: string, size?: string): PaginationParams => {
-    const limit = size && !isNaN(parseInt(size, 10)) ? parseInt(size, 10) : 10;
-    const parsedPage = page && !isNaN(parseInt(page, 10)) ? parseInt(page, 10) : 1;
-    const offset = (parsedPage - 1) * limit;
-    return { limit, offset };
+const getPagination = (page?: string, limit?: string): PaginationParams => {
+    const size = limit && !isNaN(parseInt(limit,10)) ? parseInt(limit,10) : 10;
+    const parsedPage = page && !isNaN(parseInt(page,10)) ? parseInt(page,10) : 1;
+    const offset = (parsedPage - 1) * size;
+    return { size, offset };
 };
 
 const getPagingData = <T>(data: { count: number, rows: T[] }, page: string | undefined, limit: number): PaginatedResult<T> => {

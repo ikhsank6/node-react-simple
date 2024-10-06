@@ -13,6 +13,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
 
     jwt.verify(token, process.env.JWT_SECRET!, async (err, decodedToken) => {
         if (err) {
+            console.log("jwt", err);
             return res.error("Forbidden",403);
         }
 

@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './store';
+import User from './pages/User';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -24,6 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             {/* Private Routes */}
             <Route element={<PrivateRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/user" element={<User />} />
             </Route>
 
             {/* Default redirect to login */}

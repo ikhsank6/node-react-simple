@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import AuthService from '../services/AuthService';
 import { login } from '../features/auth/authSlice';
@@ -6,19 +6,34 @@ import { Link, useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/20/solid';
 import { errorMessage } from '../helpers/common';
 
+interface FormData {
+    username: string;
+    password: string;
+}
+
 const Login: React.FC = () => {
-    const [username, setUsername] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
+    const [formData, setFormData] = useState<FormData>({
+        username: "",
+        password: "",
+    });
     const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             setLoading(true);
-            const response = await AuthService.login(username, password);
+            const response = await AuthService.login(formData);
             dispatch(login({ user: response.data.user, accessToken: response.data.accessToken, refreshToken: response.data.refreshToken }));
             navigate('/dashboard');
         } catch (error) {
@@ -39,11 +54,11 @@ const Login: React.FC = () => {
                             Username
                         </label>
                         <input
-                            id="username"
+                            name="username"
                             type="text"
                             required
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={handleInputChange}
+                            value={formData.username}
                             className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                     </div>
@@ -53,11 +68,11 @@ const Login: React.FC = () => {
                         </label>
                         <div className="relative">
                             <input
-                                id="password"
+                                name="password"
                                 type={passwordVisible ? 'text' : 'password'}
                                 required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={handleInputChange}
+                                value={formData.password}
                                 className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             />
                             <button

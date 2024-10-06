@@ -8,8 +8,8 @@ class AuthService {
         this.url = 'auth';
     }
 
-    public async login(username: string, password: string) {
-        const response = await Request(api.post(`${this.url}/login`, { username, password }));
+    public async login(params: any) {
+        const response = await Request(api.post(`${this.url}/login`, params));
         // if (response) {
         //     localStorage.setItem('accessToken', response.data.data.accessToken);
         //     localStorage.setItem('refreshToken', response.data.data.refreshToken);
