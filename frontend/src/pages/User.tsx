@@ -63,7 +63,7 @@ const User: React.FC = () => {
     };
 
     const clearSearch = () => {
-        setFilters({ kueri: ''});
+        setFilters({ kueri: '' });
     };
 
     return (
@@ -135,12 +135,12 @@ const User: React.FC = () => {
                                 </td>
                             </tr>
                         ) : data.length === 0 ? (
-                        // Show no data found message
-                        <tr>
-                            <td colSpan={4} className="text-center py-4 text-gray-500">
-                                No data found.
-                            </td>
-                        </tr>
+                            // Show no data found message
+                            <tr>
+                                <td colSpan={4} className="text-center py-4 text-gray-500">
+                                    No data found.
+                                </td>
+                            </tr>
                         ) : (
                             // Show user data rows
                             data.map((user) => (
